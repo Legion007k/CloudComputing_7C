@@ -1,4 +1,6 @@
 ﻿
+using System.ComponentModel;
+
 namespace CenaDeFilosofos.Clases
 {
     internal class MainApplicaiton
@@ -9,7 +11,6 @@ namespace CenaDeFilosofos.Clases
 
         public Thread[] threads { get; set; }
         public object turnLock = new object();
-        public int turn = -1;// Initialize turn to -1 to indicate no philosopher's turn yet
         public MainApplicaiton(int numPhilosophers)
         {
             this.numPhilosophers = numPhilosophers;
@@ -35,25 +36,24 @@ namespace CenaDeFilosofos.Clases
             for (int i = 0; i < numPhilosophers; i++)
             {
                 int id = i;
+                int counter = 0;
                 threads[i] = new Thread(() =>
                 {
                     while (true)
                     {
                         bool myTurn;
-                        lock (turnLock)
+
+                        if (philosophers[id].instance < counter + 1)
                         {
-                            if (turn == -1) turn = id;
-                            if (turn == id) myTurn = true;
-                            else myTurn = false;
+                            myTurn = true;
                         }
+                        else myTurn = false;
+                        
                         if (!myTurn) continue;
 
                         philosophers[id].TryEating(id);
-                        lock (turnLock)
-                        {
-                            turn = (turn + 1) % numPhilosophers; // Move to the next philosopher's turn
-                        }
-                        return;
+                        counter++;
+
                     }
                 });
             }
